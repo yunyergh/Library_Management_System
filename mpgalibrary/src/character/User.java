@@ -18,8 +18,10 @@ public class User {
     public List<Book> getMyBorrowedBooks(int type) {
         List<Book> books = new ArrayList<>();
         for (Book myBorrowedBook : myBorrowedBooks) {
-            if (myBorrowedBook.getType() == type) {
-                books.add(myBorrowedBook);
+            if(myBorrowedBook != null) {
+                if (myBorrowedBook.getType() == type) {
+                    books.add(myBorrowedBook);
+                }
             }
         }
         return books;
@@ -46,4 +48,6 @@ public class User {
         myBorrowedBooks.clear();
         return books;
     }
+
+
 }

@@ -1,11 +1,9 @@
 package character;
 
-import com.sun.deploy.trace.Trace;
 import entity.Book;
 import entity.ComicBook;
 import entity.NovelBook;
 import entity.ProgrammingBook;
-import library.BookSelf;
 import library.Library;
 
 import java.util.ArrayList;
@@ -26,14 +24,14 @@ import java.util.List;
 //那在这样的场景下，创建多个管理员角色实例没有任何意义，不如让管理员和系统合为一体
 //管理员的登场意味着可以管理用户、管理书籍，换言之，就是系统进入了一种“管理”状态
 //因此，管理员的登录即系统的currentState切换为STATE_ADMIN
-public class System {
+public class MySystem {
     //标识当前系统的状态，是谁在操作系统
     public static final int STATE_ADMIN = 0;
     public static final int STATE_USER = 1;
     public static final int STATE_IDLE = 2;
-    private static Trace out;
+
     public int currentState;
-    public User currentUser;//标识当前用户，当且仅当currentState是STATE_USER时有效
+    public UserWrapper currentUser;//标识当前用户，当且仅当currentState是STATE_USER时有效
 
     //系统管理着所有用户
     private final List<UserWrapper> users = new ArrayList<>();
@@ -45,10 +43,11 @@ public class System {
     private final List<Book> availableBooks = new ArrayList<>();
 
     //保证全程序唯一实例，所以构造函数设成私有，唯一实例通过get()获取
-    private System() { }
+    private MySystem() {
+    }
 
     //返回System单例
-    public static System get() {
+    public static MySystem get() {
         return SystemInner.INSTANCE;
     }
 
@@ -84,6 +83,20 @@ public class System {
         library.getBookSelf(index).removeBook(bookId);
     }
 
+    public int findShell(Book book) {
+        int index = -1; //表示索引
+        for (int i = 0; i < library.getBookSelvesNum(); i++) {
+            for (Book sample : library.getBookSelf(i).getBooks()) {
+                if (sample != null && sample.getId() == book.getId()) {
+                    index = i;
+                    i = library.getBookSelvesNum(); //跳出外层循环
+                    break; //终止内层循环
+                }
+            }
+        }
+        return index;
+    }
+
     //创建书本，最后一个变长数组用于书本的额外信息
     public void createBook(String name, int pageNum, int type, String... others) {
         if (!checkState(STATE_ADMIN)) {
@@ -104,12 +117,12 @@ public class System {
             if (others.length != 2) {
                 return;
             }
-            book = new ProgrammingBook(name, pageNum, Book.PROGRAMMING,  others[0], others[1]);
+            book = new ProgrammingBook(name, pageNum, Book.PROGRAMMING, others[0], others[1]);
         } else if (type == Book.NOVEL) {
             if (others.length != 3) {
                 return;
             }
-            book = new NovelBook(name, pageNum, Book.NOVEL,  others[0], others[1], others[2]);
+            book = new NovelBook(name, pageNum, Book.NOVEL, others[0], others[1], others[2]);
         }
         if (book == null) {
             return;
@@ -166,6 +179,10 @@ public class System {
         //用户名（为方便起见，用户名唯一）
         private String username;
 
+        public User returnUser() {
+            return this.user;
+        }
+
         public UserWrapper(User user, String username, String password) {
             this.user = user;
             this.isActive = true;
@@ -174,14 +191,30 @@ public class System {
         }
     }
 
+    public void userLogUp(String username, String password) {
+        User use0 = new User();
+        UserWrapper user = new UserWrapper(use0, username, password);
+        users.add(user);
+    }
+
+    public void userLogIn(String username, String password) {
+        for (UserWrapper user : users) {
+            if (user.password == password) {
+                currentState = STATE_USER;
+                currentUser = user;
+                break;
+            }
+        }
+    }
+
     //这个内部类用于实现System全程序唯一实例，如果看不懂为什么这样能实现单例可以先暂时不用管
     private static final class SystemInner {
-        private static System INSTANCE = new System();
+        private static MySystem INSTANCE = new MySystem();
     }
 
     public List<Book> bookIteration() {
         List<Book> books = new ArrayList<>();
-        for(int i = 0; i < library.getBookSelvesNum(); i++) {
+        for (int i = 0; i < library.getBookSelvesNum(); i++) {
             books.addAll(library.getBookSelf(i).getBooks());
         }
         return books;
@@ -189,9 +222,9 @@ public class System {
 
     public List<Book> typeBookIteration(int type) {  //按书架、按类型的函数参数一样，重载不了，故函数名设成不一样。
         List<Book> books = new ArrayList<>();
-        for(int i = 0; i < library.getBookSelvesNum(); i++) {
-            for(Book book : library.getBookSelf(i).getBooks()) {
-                if(book.getType() == type) {
+        for (int i = 0; i < library.getBookSelvesNum(); i++) {
+            for (Book book : library.getBookSelf(i).getBooks()) {
+                if (book.getType() == type) {
                     books.add(book);
                 }
             }
@@ -201,7 +234,56 @@ public class System {
 
     public List<Book> shellBookIteration(int index) {
         return library.getBookSelf(index).getBooks();
-        
     }
 
+    public void returnBook(Book book) {
+        if (!checkState(STATE_USER))
+            return;
+        if (currentUser.isActive == false)
+            return;
+        availableBooks.add(book);
+        /**
+         * 用户还的应该到availableBooks
+         * 上面这句话“第index个书架的图书上架，上架的书有两种可能的来源，用户还来的书以及availableBooks”
+         * 应该只有一个来源availableBooks才对，因为借出的同时就意味着下架，下架直接从书架remove了
+         * 回来的时候也找不到位置了。
+         */
+    }
+
+    public Book borrowBook(Book book) {
+        if (!checkState(STATE_USER))
+            return null;
+        if (currentUser.isActive == false)
+            return null;
+        int index = findShell(book);
+        if (index == -1)
+            return null;
+        library.getBookSelf(index).removeBook(book.getId());
+        return book;
+    }
+
+    public Library getLibrary() {
+        return library;
+    }
+
+    public UserWrapper getCurrentUser() {
+        return currentUser;
+    }
+
+    public Book bookIdForBook(int bookid) {
+        for (Book book : availableBooks) {
+            if (book.getId() == bookid)
+                return book;
+        }
+        return null;
+    }
+
+    public void setQuality(int quality) {
+        for (int i = 0; i < library.getBookSelvesNum(); i++) {
+            for (Book book : library.getBookSelf(i).getBooks()) {
+                if(book != null)
+                book.setQuality(50);
+            }
+        }
+    }
 }
