@@ -179,116 +179,29 @@ public class System {
         private static System INSTANCE = new System();
     }
 
-    public void all_books_iteration(Library library) { //把所有书架上的书遍历一遍
-        int size_bookSelves = library.getBookSelvesNum();
-        int option;
-        ComicBook comicBook;
-        NovelBook novelBook;
-        ProgrammingBook programmingBook;
-        for(int i = 0; i < size_bookSelves; i++) {
-            for(Book book : library.getBookSelf(i).getBooks()) {  //library.getBookSelf(i).getBooks()表示第i个书架上的所有书
-                if(book != null) {
-                    option = book.getType();
-                    switch (option) {
-                        case 1:
-                            comicBook = (ComicBook) book;
-                            comic_show(comicBook);
-                            break;
-                        case 2:
-                            programmingBook = (ProgrammingBook) book;
-                            Programming_show(programmingBook);
-                            break;
-                        case 3:
-                            novelBook = (NovelBook) book;
-                            novel_show(novelBook);
-                            break;
-                    }
+    public List<Book> bookIteration() {
+        List<Book> books = new ArrayList<>();
+        for(int i = 0; i < library.getBookSelvesNum(); i++) {
+            books.addAll(library.getBookSelf(i).getBooks());
+        }
+        return books;
+    }
+
+    public List<Book> typeBookIteration(int type) {  //按书架、按类型的函数参数一样，重载不了，故函数名设成不一样。
+        List<Book> books = new ArrayList<>();
+        for(int i = 0; i < library.getBookSelvesNum(); i++) {
+            for(Book book : library.getBookSelf(i).getBooks()) {
+                if(book.getType() == type) {
+                    books.add(book);
                 }
             }
         }
+        return books;
     }
 
-    public void special_shell_iteration(Library library, int shell) {
-        if(shell < 1 || shell > library.getBookSelvesNum()) {
-            return; //说明超出范围
-        }
-        int option;
-        ComicBook comicBook;
-        NovelBook novelBook;
-        ProgrammingBook programmingBook;
-        for(Book book : library.getBookSelf(shell).getBooks()) {
-            if(book != null) {
-                option = book.getType();
-                switch (option) {
-                    case 1:
-                        comicBook = (ComicBook) book;
-                        comic_show(comicBook);
-                        break;
-                    case 2:
-                        programmingBook = (ProgrammingBook) book;
-                        Programming_show(programmingBook);
-                        break;
-                    case 3:
-                        novelBook = (NovelBook) book;
-                        novel_show(novelBook);
-                        break;
-                }
-            }
-        }
-    }
-
-    public void special_type_iteration(Library library, int type) {
-        int size_bookSelves = library.getBookSelvesNum();
-        ComicBook comicBook;
-        NovelBook novelBook;
-        ProgrammingBook programmingBook;
-        switch (type) {
-            case 1:
-                for(int i = 0; i < size_bookSelves; i++) {
-                    for(Book book : library.getBookSelf(i).getBooks()) {
-                        if(book != null && book.getType() == type) {
-                            comicBook = (ComicBook) book;
-                            comic_show(comicBook);
-                        }
-                    }
-                }
-                break;
-            case 2:
-                for(int i = 0; i < size_bookSelves; i++) {
-                    for(Book book : library.getBookSelf(i).getBooks()) {
-                        if(book != null && book.getType() == type) {
-                            programmingBook = (ProgrammingBook) book;
-                            Programming_show(programmingBook);
-                        }
-                    }
-                }
-                break;
-            case 3:
-                for(int i = 0; i < size_bookSelves; i++) {
-                    for(Book book : library.getBookSelf(i).getBooks()) {
-                        if(book != null && book.getType() == type) {
-                            novelBook = (NovelBook) book;
-                            novel_show(novelBook);
-                        }
-                    }
-                }
-                break;
-        }
-    }
-
-    private void comic_show(ComicBook book) {
-        System.out.print("书名：" + book.getName() + "、页数：" + book.getPageNum() + "、新旧程度：" + book.getQuality() + "、分类：ComicBook" );
-        System.out.println("、作者：" + book.getAuthor() + "、作品简介：" + book.getIntroduction());
-    }
-
-    private void novel_show(NovelBook book) {
-        System.out.print("书名：" + book.getName() + "、页数：" + book.getPageNum() + "、新旧程度：" + book.getQuality() + "、分类：NovelBook");
-        System.out.println("、作者：" + book.getAuthor() + "、作品简介：" + book.getIntroduction() + "男女主：" + book.getLeadRole());
-    }
-
-    private void Programming_show(ProgrammingBook book) {
-        System.out.print("书名：" + book.getName() + "、页数：" + book.getPageNum() + "、新旧程度：" + book.getQuality() + "、分类：ProgrammingBook");
-        System.out.println("、语言类型：" + book.getLanguage() + "、博客链接：" + book.getBlogLink());
+    public List<Book> shellBookIteration(int index) {
+        return library.getBookSelf(index).getBooks();
+        
     }
 
 }
