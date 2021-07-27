@@ -4,6 +4,7 @@ import entity.Book;
 import entity.ComicBook;
 import entity.NovelBook;
 import entity.ProgrammingBook;
+import library.BookSelf;
 import library.Library;
 
 import java.util.ArrayList;
@@ -179,9 +180,9 @@ public class MySystem {
         //用户名（为方便起见，用户名唯一）
         private String username;
 
-        public User returnUser() {
-            return this.user;
-        }
+//        public User returnUser() {
+//            return this.user;
+//        }
 
         public UserWrapper(User user, String username, String password) {
             this.user = user;
@@ -199,7 +200,7 @@ public class MySystem {
 
     public void userLogIn(String username, String password) {
         for (UserWrapper user : users) {
-            if (user.password == password) {
+            if (user.username.equals(username) && user.password.equals(password)) {
                 currentState = STATE_USER;
                 currentUser = user;
                 break;
@@ -236,7 +237,7 @@ public class MySystem {
         return library.getBookSelf(index).getBooks();
     }
 
-    public void returnBook(Book book) {
+    private void returnBook(Book book) {
         if (!checkState(STATE_USER))
             return;
         if (currentUser.isActive == false)
@@ -250,7 +251,7 @@ public class MySystem {
          */
     }
 
-    public Book borrowBook(Book book) {
+    private Book borrowBook(Book book) {
         if (!checkState(STATE_USER))
             return null;
         if (currentUser.isActive == false)
@@ -260,14 +261,6 @@ public class MySystem {
             return null;
         library.getBookSelf(index).removeBook(book.getId());
         return book;
-    }
-
-    public Library getLibrary() {
-        return library;
-    }
-
-    public UserWrapper getCurrentUser() {
-        return currentUser;
     }
 
     public Book bookIdForBook(int bookid) {
@@ -282,8 +275,25 @@ public class MySystem {
         for (int i = 0; i < library.getBookSelvesNum(); i++) {
             for (Book book : library.getBookSelf(i).getBooks()) {
                 if(book != null)
-                book.setQuality(50);
+                book.setQuality(quality);
             }
         }
     }
+
+    public List<Book> getBorrowBooks() {
+        return currentUser.user.getMyBorrowedBooks();
+    }
+
+    public List<Book> getBorrowBooks(int type) {
+        return currentUser.user.getMyBorrowedBooks(type);
+    }
+
+    public void userBorrowBooks(int bookid) {
+        currentUser.user.borrowBook(borrowBook(bookIdForBook(bookid)));
+    }
+
+    public void addBookSelve(BookSelf bookSelf) {
+        library.addBookSelve(bookSelf);
+    }
+
 }

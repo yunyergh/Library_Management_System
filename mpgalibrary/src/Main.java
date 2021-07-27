@@ -9,20 +9,19 @@ public class Main {
 
         //首先，管理员登录，然后才能创建书
         system.adminLogin();
-        system.createBook("aaa",90,1,"aaa", "good"); //id从0到4
-
-        system.createBook("bbb",80,3,"bbb", "bbb", "bbb");
-        system.createBook("ccc",70,1,"ccc", "bad");
-        system.createBook("ddd",60,2,"ddd", "csdn");
-        system.createBook("eee",50,3,"eee", "eee", "eee");
+        system.createBook("aaa",90,Book.COMIC,"aaa", "good"); //id从0到4
+        system.createBook("bbb",80,Book.NOVEL,"bbb", "bbb", "bbb");
+        system.createBook("ccc",70,Book.COMIC,"ccc", "bad");
+        system.createBook("ddd",60,Book.PROGRAMMING,"ddd", "csdn");
+        system.createBook("eee",50,Book.NOVEL,"eee", "eee", "eee");
 
         //创建三个书架
         BookSelf bookSelf1 = new BookSelf();
         BookSelf bookSelf2 = new BookSelf();
         BookSelf bookSelf3 = new BookSelf();
-        system.getLibrary().addBookSelve(bookSelf1);
-        system.getLibrary().addBookSelve(bookSelf2);
-        system.getLibrary().addBookSelve(bookSelf3);
+        system.addBookSelve(bookSelf1);
+        system.addBookSelve(bookSelf2);
+        system.addBookSelve(bookSelf3);
 
         //管理员将书上架
         system.addBookToBookSelf(0,system.bookIdForBook(0));
@@ -34,17 +33,17 @@ public class Main {
         //a用户注册，登录并借书
         system.userLogUp("a","a");
         system.userLogIn("a","a");
-        system.getCurrentUser().returnUser().borrowBook(system.borrowBook(system.bookIdForBook(0)));
-        system.getCurrentUser().returnUser().borrowBook(system.borrowBook(system.bookIdForBook(1)));
-        system.getCurrentUser().returnUser().borrowBook(system.borrowBook(system.bookIdForBook(4)));
+        system.userBorrowBooks(0);
+        system.userBorrowBooks(1);
+        system.userBorrowBooks(4);
 
         //b用户注册，登录并借书
         system.userLogUp("b","b");
         system.userLogIn("b","b");
 
-        system.getCurrentUser().returnUser().borrowBook(system.borrowBook(system.bookIdForBook(0)));
-        system.getCurrentUser().returnUser().borrowBook(system.borrowBook(system.bookIdForBook(1)));
-        system.getCurrentUser().returnUser().borrowBook(system.borrowBook(system.bookIdForBook(3)));
+        system.userBorrowBooks(0);
+        system.userBorrowBooks(1);
+        system.userBorrowBooks(3);
 
         //管理员登录，设置黑名单,设置新旧程度
         system.adminLogin();
@@ -57,7 +56,7 @@ public class Main {
             System.out.println("第" + (i+1) + "个书架：");
             for(Book book : system.shellBookIteration(i)) {
                 if(book != null)
-                System.out.println(book.getName());
+                    System.out.println(book.getName());
             }
             System.out.println();
         }
@@ -66,26 +65,26 @@ public class Main {
         //输出a的所有书
         System.out.println("输出a的所有书：");
         system.userLogIn("a","a");
-        for(Book book : system.getCurrentUser().returnUser().getMyBorrowedBooks()) {
+        for(Book book : system.getBorrowBooks()) {
             if(book != null)
-            System.out.println(book.getName());
+                System.out.println(book.getName());
         }
         System.out.println();
 
         //输出a的小说
         System.out.println("输出a的小说：");
-        for(Book book : system.getCurrentUser().returnUser().getMyBorrowedBooks(3)) {
+        for(Book book : system.getBorrowBooks(3)) {
             if(book != null)
-            System.out.println(book.getName());
+                System.out.println(book.getName());
         }
         System.out.println();
 
         //输出b的所有书
         System.out.println("输出b的所有书：");
         system.userLogIn("b","b");
-        for(Book book : system.getCurrentUser().returnUser().getMyBorrowedBooks()) {
+        for(Book book : system.getBorrowBooks()) {
             if(book != null)
-            System.out.println(book.getName());
+                System.out.println(book.getName());
         }
         System.out.println();
     }
